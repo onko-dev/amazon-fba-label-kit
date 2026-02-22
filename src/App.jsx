@@ -2,59 +2,40 @@ import { useState, useEffect, useRef } from 'react'
 import JsBarcode from 'jsbarcode'
 import './index.css'
 
-// Icons from a simple SVG set
-const PrinterIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+// Icon components (using cleaner strokes for modern feel)
+const IconPrint = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
 )
-const TrashIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+const IconRefresh = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
 )
-const InfoIcon = () => (
-  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+const IconSettings = () => (
+   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 )
 
 function App() {
-  // Initialize state from local storage or defaults
-  const [fnsku, setFnsku] = useState(() => {
-    try {
-      const saved = localStorage.getItem('last_label')
-      return saved ? JSON.parse(saved).fnsku || '' : ''
-    } catch { return '' }
-  })
-  const [title, setTitle] = useState(() => {
-    try {
-      const saved = localStorage.getItem('last_label')
-      return saved ? JSON.parse(saved).title || '' : ''
-    } catch { return '' }
-  })
-  const [condition, setCondition] = useState(() => {
-    try {
-      const saved = localStorage.getItem('last_label')
-      return saved ? JSON.parse(saved).condition || 'New' : 'New'
-    } catch { return 'New' }
-  })
-  const [sku, setSku] = useState(() => {
-    try {
-      const saved = localStorage.getItem('last_label')
-      return saved ? JSON.parse(saved).sku || '' : ''
-    } catch { return '' }
-  })
-  const [labelSize, setLabelSize] = useState(() => {
-    try {
-      const saved = localStorage.getItem('last_label')
-      return saved ? JSON.parse(saved).labelSize || '4x6' : '4x6'
-    } catch { return '4x6' }
-  })
+  // Initialize state from local storage or defaults (same logic, cleaner code)
+  const usePersistedState = (key, defaultValue) => {
+    const [state, setState] = useState(() => {
+      try {
+        const saved = localStorage.getItem(key)
+        return saved ? JSON.parse(saved) : defaultValue
+      } catch { return defaultValue }
+    })
+    useEffect(() => {
+      localStorage.setItem(key, JSON.stringify(state))
+    }, [key, state])
+    return [state, setState]
+  }
 
+  const [fnsku, setFnsku] = usePersistedState('fnsku', '')
+  const [title, setTitle] = usePersistedState('title', '')
+  const [condition, setCondition] = usePersistedState('condition', 'New')
+  const [sku, setSku] = usePersistedState('sku', '')
+  const [labelSize, setLabelSize] = usePersistedState('labelSize', '4x6')
   const [showSafeZone, setShowSafeZone] = useState(false)
-  const barcodeRef = useRef(null)
 
-  // Remove the initial useEffect loader
-  
-  // Save to local storage on change
-  useEffect(() => {
-    localStorage.setItem('last_label', JSON.stringify({ fnsku, title, condition, sku, labelSize }))
-  }, [fnsku, title, condition, sku, labelSize])
+  const barcodeRef = useRef(null)
 
   // Generate barcode
   useEffect(() => {
@@ -62,16 +43,12 @@ function App() {
       try {
         JsBarcode(barcodeRef.current, fnsku, {
           format: "CODE128",
-          width: 2,
-          height: 50,
-          displayValue: true,
-          fontSize: 14,
+          width: 2, // Slightly thinner for cleaner look
+          height: 40, // Balanced height
+          displayValue: false, // We render value manually for font control
           margin: 0,
-          font: "JetBrains Mono" // Use monospaced font
         })
-      } catch (e) {
-        console.error("Invalid barcode data", e)
-      }
+      } catch (e) { console.error(e) }
     }
   }, [fnsku, labelSize])
 
@@ -79,8 +56,8 @@ function App() {
     window.print()
   }
 
-  const handleClear = () => {
-    if (window.confirm('Clear all fields?')) {
+  const handleReset = () => {
+    if(window.confirm("Reset all fields?")) {
       setFnsku('')
       setTitle('')
       setSku('')
@@ -89,227 +66,217 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100 text-neutral-900 font-sans print:bg-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-primary-100 selection:text-primary-700 print:bg-white print:text-black">
       
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm no-print sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">📦</span>
-            <h1 className="text-xl font-bold text-gray-900 tracking-tight">FBA Label Kit <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full ml-2 border border-gray-200">BETA</span></h1>
-          </div>
-          <div className="text-sm text-gray-500 hidden sm:block">
-            Professional FNSKU Generator
-          </div>
-        </div>
-      </header>
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none no-print" style={{ backgroundImage: 'radial-gradient(#64748b 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:p-0">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 print:block">
+      {/* Main Container */}
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 lg:py-12 print:p-0">
+        
+        {/* Modern Header */}
+        <header className="flex items-center justify-between mb-12 no-print">
+          <div className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl shadow-lg shadow-primary-500/20 flex items-center justify-center text-white text-xl">
+              📦
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-primary-600 transition-colors">FBA Label Kit</h1>
+              <p className="text-xs text-slate-500 font-medium tracking-wide uppercase">Precision FNSKU Generator</p>
+            </div>
+          </div>
           
-          {/* Left Panel: Controls */}
-          <div className="lg:col-span-4 space-y-6 no-print">
-            
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span className="w-1 h-6 bg-primary rounded-full"></span>
-                Product Details
-              </h2>
+          <button 
+            onClick={handleReset}
+            className="text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100"
+            title="Reset"
+          >
+            <IconRefresh />
+          </button>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start print:block">
+          
+          {/* Left: Interactive Form (Floating Card) */}
+          <div className="lg:col-span-5 space-y-8 no-print sticky top-8">
+            <div className="bg-white rounded-3xl shadow-float p-8 border border-slate-100/50 backdrop-blur-sm bg-white/90">
               
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">FNSKU (Barcode)</label>
+              <div className="space-y-6">
+                
+                {/* FNSKU Input (Hero) */}
+                <div className="group">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 group-focus-within:text-primary-500 transition-colors">
+                    FNSKU Barcode
+                  </label>
                   <div className="relative">
                     <input 
                       type="text" 
                       value={fnsku}
                       onChange={(e) => setFnsku(e.target.value.toUpperCase().trim())}
                       placeholder="X00..."
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-light focus:border-primary font-mono text-lg tracking-wide uppercase transition-shadow"
+                      className="block w-full px-4 py-4 text-lg font-mono tracking-wider bg-slate-50 border-0 rounded-2xl text-slate-900 placeholder-slate-300 focus:ring-2 focus:ring-primary-500/20 focus:bg-white transition-all shadow-inner"
                       autoFocus
                     />
-                    {fnsku && fnsku.length < 10 && (
-                      <span className="absolute right-3 top-3.5 text-xs text-alert font-medium">Too short</span>
+                    {fnsku && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                         {fnsku.length >= 10 ? (
+                           <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)] animate-pulse"></span>
+                         ) : (
+                           <span className="text-xs text-amber-500 font-medium">Too Short</span>
+                         )}
+                      </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                    <InfoIcon /> Must match Amazon FNSKU exactly.
-                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
-                  <input 
-                    type="text" 
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Silicone Spatula Set, Red..."
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-light focus:border-primary transition-shadow"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                {/* Other Inputs */}
+                <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
-                    <select 
-                      value={condition}
-                      onChange={(e) => setCondition(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-light focus:border-primary bg-white"
-                    >
-                      <option>New</option>
-                      <option>Used - Like New</option>
-                      <option>Used - Very Good</option>
-                      <option>Used - Good</option>
-                      <option>Used - Acceptable</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Seller SKU (Optional)</label>
-                     <input 
-                      type="text" 
-                      value={sku}
-                      onChange={(e) => setSku(e.target.value)}
-                      placeholder="MY-SKU-001"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-light focus:border-primary font-mono text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span className="w-1 h-6 bg-secondary rounded-full"></span>
-                Print Settings
-              </h2>
-              
-              <div className="space-y-4">
-                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Label Size</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => setLabelSize('4x6')}
-                      className={`p-3 border rounded-lg text-sm font-medium transition-all ${labelSize === '4x6' ? 'border-primary bg-blue-50 text-primary ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300 text-gray-600'}`}
-                    >
-                      4" x 6"
-                      <span className="block text-xs font-normal opacity-75 mt-0.5">Standard Thermal</span>
-                    </button>
-                    <button
-                      onClick={() => setLabelSize('2.25x1.25')}
-                      className={`p-3 border rounded-lg text-sm font-medium transition-all ${labelSize === '2.25x1.25' ? 'border-primary bg-blue-50 text-primary ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300 text-gray-600'}`}
-                    >
-                      2.25" x 1.25"
-                      <span className="block text-xs font-normal opacity-75 mt-0.5">Address Label</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <label className="text-sm text-gray-700 flex items-center gap-2 cursor-pointer select-none">
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Product Title</label>
                     <input 
-                      type="checkbox" 
-                      checked={showSafeZone} 
-                      onChange={(e) => setShowSafeZone(e.target.checked)}
-                      className="rounded text-primary focus:ring-primary border-gray-300" 
+                      type="text" 
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g. Silicone Spatula Set..."
+                      className="block w-full px-4 py-3 text-sm bg-slate-50 border-0 rounded-xl text-slate-700 placeholder-slate-300 focus:ring-2 focus:ring-primary-500/20 focus:bg-white transition-all"
                     />
-                    Show Print Margins
-                  </label>
-                  <span className="text-xs text-gray-400">Visual guide only</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Condition</label>
+                      <select 
+                        value={condition}
+                        onChange={(e) => setCondition(e.target.value)}
+                        className="block w-full px-4 py-3 text-sm bg-slate-50 border-0 rounded-xl text-slate-700 focus:ring-2 focus:ring-primary-500/20 focus:bg-white transition-all appearance-none cursor-pointer"
+                      >
+                        <option>New</option>
+                        <option>Used - Like New</option>
+                        <option>Used - Very Good</option>
+                        <option>Used - Good</option>
+                        <option>Used - Acceptable</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">SKU (Optional)</label>
+                      <input 
+                        type="text" 
+                        value={sku}
+                        onChange={(e) => setSku(e.target.value)}
+                        placeholder="Internal SKU"
+                        className="block w-full px-4 py-3 text-sm font-mono bg-slate-50 border-0 rounded-xl text-slate-700 placeholder-slate-300 focus:ring-2 focus:ring-primary-500/20 focus:bg-white transition-all"
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Size Selector (Pills) */}
+                <div>
+                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                     <IconSettings /> Label Size
+                   </label>
+                   <div className="flex bg-slate-100 p-1 rounded-xl">
+                     {['4x6', '2.25x1.25'].map((s) => (
+                       <button
+                         key={s}
+                         onClick={() => setLabelSize(s)}
+                         className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${labelSize === s ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                       >
+                         {s === '4x6' ? '4" x 6" (Standard)' : '2.25" x 1.25"'}
+                       </button>
+                     ))}
+                   </div>
+                </div>
+
+                {/* Primary Action */}
+                <button 
+                  onClick={handlePrint}
+                  disabled={!fnsku}
+                  className="w-full group relative overflow-hidden bg-slate-900 text-white font-semibold py-4 px-6 rounded-2xl shadow-xl shadow-slate-900/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-[0.98] hover:shadow-2xl hover:shadow-primary-500/20 hover:bg-slate-800"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <IconPrint /> Print Label
+                  </span>
+                </button>
+
               </div>
             </div>
-
-            <div className="flex gap-3 pt-2">
-              <button 
-                onClick={handlePrint}
-                disabled={!fnsku}
-                className="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
-              >
-                <PrinterIcon />
-                Print Label
-              </button>
-              <button 
-                onClick={handleClear}
-                className="px-4 py-3.5 border border-gray-300 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors"
-                title="Clear All"
-              >
-                <TrashIcon />
-              </button>
-            </div>
-
-             <div className="text-xs text-gray-500 text-center mt-4">
-              <p>Pro Tip: Set printer scale to <strong>100%</strong> (Do not scale)</p>
-            </div>
-
           </div>
 
-          {/* Right Panel: Preview */}
-          <div className="lg:col-span-8 bg-gray-200/50 rounded-xl border border-gray-200/50 p-8 flex flex-col items-center justify-center min-h-[600px] relative print:p-0 print:bg-white print:border-0 print:block print:min-h-0">
+          {/* Right: The Label (Central Stage) */}
+          <div className="lg:col-span-7 flex flex-col items-center justify-center min-h-[600px] relative">
             
-            <div className="absolute top-4 right-4 no-print text-xs font-medium text-gray-400 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
-              Live Preview
+            {/* Visual Context */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none no-print">
+              <div className="w-[500px] h-[500px] bg-gradient-to-tr from-primary-100 to-transparent rounded-full blur-3xl"></div>
             </div>
 
-            {/* Label Canvas */}
+            <div className="relative z-10 no-print mb-6 flex items-center gap-2">
+               <label className="text-xs font-medium text-slate-400 flex items-center gap-2 cursor-pointer select-none px-3 py-1.5 rounded-full hover:bg-white/50 transition-colors border border-transparent hover:border-slate-200/50">
+                <input 
+                  type="checkbox" 
+                  checked={showSafeZone} 
+                  onChange={(e) => setShowSafeZone(e.target.checked)}
+                  className="rounded text-primary-500 focus:ring-0 border-slate-300 w-3.5 h-3.5" 
+                />
+                Show Print Safe Zone
+              </label>
+            </div>
+
+            {/* The Physical Label (Preview) */}
             <div 
               id="print-area"
-              className={`bg-white shadow-xl print:shadow-none flex flex-col items-center justify-center text-center p-4 border transition-all duration-300 mx-auto relative overflow-hidden ${showSafeZone ? 'border-alert border-dashed' : 'border-gray-200 print:border-0'}`}
+              className={`bg-white text-black transition-all duration-500 ease-out mx-auto relative overflow-hidden flex flex-col items-center justify-center
+                ${showSafeZone ? 'after:absolute after:inset-[0.125in] after:border after:border-dashed after:border-primary-200 after:rounded-sm after:pointer-events-none' : ''}
+                shadow-2xl shadow-slate-200 print:shadow-none print:border-0`}
               style={{
                 width: labelSize === '4x6' ? '4in' : '2.25in',
                 height: labelSize === '4x6' ? '6in' : '1.25in',
-                // Zoom for better visibility on large screens if needed, but keep 1:1 for print accuracy
-                transform: 'scale(1)', 
-                transformOrigin: 'top center'
+                transform: 'scale(1)', // Keep 1:1 visually for accuracy
               }}
             >
-              {/* Safe Zone Overlay */}
-              {showSafeZone && (
-                <div className="absolute inset-2 border border-blue-200 border-dashed pointer-events-none opacity-50 z-50 flex items-center justify-center">
-                  <span className="text-[10px] text-blue-300 font-mono">Safe Zone</span>
-                </div>
-              )}
-
               {fnsku ? (
-                <div className="w-full h-full flex flex-col items-center justify-center space-y-2 z-10">
+                <div className="w-full h-full flex flex-col items-center justify-center p-[0.125in] relative z-10">
                   
-                  {/* Barcode Area */}
-                  <div className="flex-1 flex items-center justify-center w-full min-h-0">
-                     <svg ref={barcodeRef} className="max-w-full h-auto max-h-full"></svg>
+                  {/* Barcode SVG */}
+                  <div className="flex-1 flex items-center justify-center w-full">
+                     <svg ref={barcodeRef} className="max-w-full h-auto" style={{ maxHeight: '80%' }}></svg>
                   </div>
 
-                  {/* Text Area */}
-                  <div className="w-full text-left px-2 text-sm leading-tight font-sans">
-                    <div className="font-bold truncate line-clamp-2 mb-1.5 text-black">{title || "Product Title"}</div>
-                    <div className="flex justify-between items-end border-t border-gray-100 pt-1.5 mt-1">
-                      <div className="text-xs text-gray-600 font-medium">{condition}</div>
-                      {sku && <div className="text-xs text-gray-500 font-mono tracking-tight">{sku}</div>}
+                  {/* Text Data */}
+                  <div className="w-full text-left font-sans text-sm leading-tight space-y-1">
+                    
+                    {/* FNSKU Text (Manually rendered for font control) */}
+                    <div className="font-mono text-xs tracking-widest text-center mb-2">{fnsku}</div>
+                    
+                    <div className="font-bold truncate line-clamp-2 pr-2">{title || "Product Title"}</div>
+                    <div className="flex justify-between items-end text-xs text-gray-600 pt-1 border-t border-gray-100">
+                      <span className="font-medium">{condition}</span>
+                      {sku && <span className="font-mono text-[10px] tracking-tighter opacity-75">{sku}</span>}
                     </div>
                   </div>
 
                 </div>
               ) : (
-                <div className="text-gray-300 text-center p-8 flex flex-col items-center justify-center h-full w-full">
-                  <div className="w-16 h-16 border-2 border-gray-200 border-dashed rounded-lg mb-3 flex items-center justify-center">
-                    <span className="text-2xl opacity-50">🏷️</span>
+                // Empty State
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 p-8 text-center animate-pulse">
+                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-4xl opacity-20">🏷️</span>
                   </div>
-                  <p className="font-medium">Waiting for input...</p>
-                  <p className="text-xs mt-1">Enter FNSKU to generate</p>
+                  <p className="font-medium text-sm">Enter FNSKU to generate preview</p>
                 </div>
               )}
             </div>
 
-             <div className="mt-8 text-xs text-gray-400 no-print max-w-sm text-center">
-               This preview represents the exact print output. Ensure your printer page size matches the label size ({labelSize}).
-             </div>
-
           </div>
         </div>
-      </main>
+      </div>
       
       {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-4 py-6 border-t border-gray-200 mt-8 text-center text-sm text-gray-500 no-print">
-        <p>© {new Date().getFullYear()} ONKO Label Kit. Local processing only - no data leaves your browser.</p>
+      <footer className="py-8 text-center no-print">
+        <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">
+           Secure Local Processing • <a href="#" className="hover:text-primary-500 transition-colors">v1.2.0</a>
+        </p>
       </footer>
 
     </div>

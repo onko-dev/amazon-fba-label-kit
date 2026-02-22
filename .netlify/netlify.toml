@@ -10,7 +10,6 @@ redirects = []
 publish = "/home/ubuntu/.openclaw/workspace/build/prototypes/amazon-fba-label-kit/dist"
 publishOrigin = "ui"
 commandOrigin = "ui"
-base = "/home/ubuntu/.openclaw/workspace/build/prototypes/amazon-fba-label-kit"
 command = "npm run build"
 
 [build.environment]
